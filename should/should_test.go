@@ -1,4 +1,4 @@
-package tiny_should
+package should_test
 
 import (
 	"testing"
