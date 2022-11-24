@@ -5,6 +5,7 @@ import (
 	"log"
 	"reflect"
 	"runtime"
+	"time"
 )
 
 type assertion func(actual any, expected ...any) error
@@ -42,18 +43,42 @@ var NOT negated
 type negated struct{}
 
 func Equal(actual any, expected ...any) error {
+	if equalTimes(actual, expected[0]) {
+		return nil
+	}
 	if reflect.DeepEqual(actual, expected[0]) {
 		return nil
 	}
-	return fmt.Errorf("\nExpected: %#v\nActual:   %#v", expected[0], actual)
+	return fmt.Errorf("\nExpected: %s\nActual:   %s", format(expected[0]), format(actual))
 }
 func (negated) Equal(actual any, expected ...any) error {
 	if Equal(actual, expected...) != nil {
 		return nil
 	}
-	return fmt.Errorf("\nExpected:     %#v\nto not equal: %#v\n(but it did)", expected[0], actual)
+	return fmt.Errorf("\nExpected:     %s\nto not equal: %s\n(but it did)", format(expected[0]), format(actual))
 }
 func BeTrue(actual any, _ ...any) error          { return Equal(actual, true) }
 func BeFalse(actual any, _ ...any) error         { return Equal(actual, false) }
 func BeNil(actual any, _ ...any) error           { return Equal(actual, nil) }
 func (negated) BeNil(actual any, _ ...any) error { return NOT.Equal(actual, nil) }
+
+func format(v any) string {
+	if isTime(v) {
+		return fmt.Sprintf("%v", v)
+	}
+	if v == nil {
+		return fmt.Sprintf("%v", v)
+	}
+	if t := reflect.TypeOf(v); t.Kind() <= reflect.Float64 {
+		return fmt.Sprintf("%v", v)
+	}
+	return fmt.Sprintf("%#v", v)
+}
+
+func equalTimes(a, b any) bool {
+	return isTime(a) && isTime(b) && a.(time.Time).Equal(b.(time.Time))
+}
+func isTime(v any) bool {
+	_, ok := v.(time.Time)
+	return ok
+}
