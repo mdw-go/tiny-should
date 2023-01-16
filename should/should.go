@@ -2,40 +2,18 @@ package should
 
 import (
 	"fmt"
-	"log"
 	"reflect"
-	"runtime"
+	"testing"
 	"time"
 )
 
 type assertion func(actual any, expected ...any) error
 
-func So(t t, actual any, assertion assertion, expected ...any) {
-	if t == nil {
-		t = Fmt{}
-	}
+func So(t *testing.T, actual any, assertion assertion, expected ...any) {
 	if err := assertion(actual, expected...); err != nil {
 		t.Helper()
 		t.Error(err)
 	}
-}
-
-type t interface {
-	Helper()
-	Error(...any)
-}
-
-type Log struct{}
-type Fmt struct{}
-
-func (Log) Helper() {}
-func (Fmt) Helper() {}
-
-func (Log) Error(a ...any) { log.Println(a...) }
-func (Fmt) Error(a ...any) {
-	_, file, line, _ := runtime.Caller(2)
-	fmt.Printf("%s:%d", file, line)
-	fmt.Println(a...)
 }
 
 var NOT negated
