@@ -1,3 +1,3 @@
-module github.com/mdwhatcott/tiny-should
+module github.com/mdw-go/tiny-should
 
 go 1.19

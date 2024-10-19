@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mdwhatcott/tiny-should/should"
+	"github.com/mdw-go/tiny-should/should"
 )
 
 func TestPassing(t *testing.T) {
