@@ -3,9 +3,31 @@ package should
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
+
+// RunTests is a minimal xUnit-style test runner for Go: https://www.smarty.com/blog/lets-build-xunit-in-go
+func RunTests(fixturePointer any, t *testing.T) {
+	fixtureType := reflect.TypeOf(fixturePointer)
+
+	for x := 0; x < fixtureType.NumMethod(); x++ {
+		testMethodName := fixtureType.Method(x).Name
+		if strings.HasPrefix(testMethodName, "Test") {
+			instance := reflect.New(fixtureType.Elem())
+
+			setupMethod := instance.MethodByName("Setup")
+			if setupMethod.IsValid() {
+				setupMethod.Call([]reflect.Value{})
+			}
+
+			testMethod := instance.MethodByName(testMethodName)
+			callableTest := testMethod.Interface().(func(t *testing.T))
+			t.Run(testMethodName, callableTest)
+		}
+	}
+}
 
 type assertion func(actual any, expected ...any) error
 
